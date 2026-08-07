@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Supplier, Trade, Currency } from '../types';
-import { Store, ArrowRight, DollarSign, QrCode, FileText, CheckCircle2, UserCheck, HelpCircle } from 'lucide-react';
+import { Store, ArrowRight, DollarSign, QrCode, FileText, CheckCircle2, UserCheck, HelpCircle, Search } from 'lucide-react';
 
 interface SupplierPortalProps {
   suppliers: Supplier[];
@@ -17,11 +17,23 @@ export const SupplierPortal: React.FC<SupplierPortalProps> = ({
 }) => {
   const [activeSupplierId, setActiveSupplierId] = useState<string>('sup_1');
   const [selectedInvoiceTrade, setSelectedInvoiceTrade] = useState<Trade | null>(null);
+  const [tradeSearch, setTradeSearch] = useState<string>('');
+  const [tradeStatusFilter, setTradeStatusFilter] = useState<'ALL' | 'LOCKED' | 'RELEASED' | 'DISPUTED'>('ALL');
 
   const activeSupplier = suppliers.find((s) => s.id === activeSupplierId) || suppliers[0];
 
   // Filter trades meant for this supplier
   const supplierTrades = trades.filter((t) => t.supplierId === activeSupplier.id);
+
+  // Search + status filter applied to table
+  const filteredTrades = supplierTrades.filter((t) => {
+    const matchesSearch =
+      tradeSearch.trim() === '' ||
+      t.traderName.toLowerCase().includes(tradeSearch.toLowerCase()) ||
+      t.escrowTxHash.toLowerCase().includes(tradeSearch.toLowerCase());
+    const matchesStatus = tradeStatusFilter === 'ALL' || t.status === tradeStatusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
   // Stats
   const lockedEscrowsCount = supplierTrades.filter((t) => t.status === 'LOCKED').length;
@@ -235,6 +247,41 @@ export const SupplierPortal: React.FC<SupplierPortalProps> = ({
             <span className="text-[10px] text-slate-500 font-mono">Filter: Live Indexer</span>
           </div>
 
+          {/* Search + Status Filter Row */}
+          <div className="flex flex-col sm:flex-row gap-2">
+            <div className="relative flex-1">
+              <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+              <input
+                type="text"
+                value={tradeSearch}
+                onChange={(e) => setTradeSearch(e.target.value)}
+                placeholder="Search trader name or tx hash..."
+                className="w-full bg-slate-900 text-xs text-slate-100 border border-slate-800 rounded-xl pl-8 pr-3 py-2 focus:outline-none focus:ring-1 focus:ring-amber-500 placeholder:text-slate-600"
+              />
+            </div>
+            <div className="flex gap-1.5 shrink-0">
+              {(['ALL', 'LOCKED', 'RELEASED', 'DISPUTED'] as const).map((status) => (
+                <button
+                  key={status}
+                  onClick={() => setTradeStatusFilter(status)}
+                  className={`px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wide border transition-all ${
+                    tradeStatusFilter === status
+                      ? status === 'LOCKED'
+                        ? 'bg-amber-950 text-amber-400 border-amber-900'
+                        : status === 'RELEASED'
+                        ? 'bg-emerald-950 text-emerald-400 border-emerald-900'
+                        : status === 'DISPUTED'
+                        ? 'bg-red-950 text-red-400 border-red-900'
+                        : 'bg-slate-700 text-slate-100 border-slate-600'
+                      : 'bg-slate-900 text-slate-500 border-slate-800 hover:text-slate-300'
+                  }`}
+                >
+                  {status}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {supplierTrades.length === 0 ? (
             <div className="text-center py-10 text-slate-500 flex flex-col items-center space-y-2">
               <Store size={28} className="text-slate-800" />
@@ -256,7 +303,13 @@ export const SupplierPortal: React.FC<SupplierPortalProps> = ({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/60">
-                  {supplierTrades.map((trade) => (
+                  {filteredTrades.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="py-8 text-center text-slate-500 text-xs">
+                        No trades match your search or filter.
+                      </td>
+                    </tr>
+                  ) : filteredTrades.map((trade) => (
                     <tr key={trade.id} className="hover:bg-slate-900/40">
                       <td className="py-4 font-semibold text-slate-200">
                         <div className="flex items-center space-x-2">
