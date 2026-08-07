@@ -18,6 +18,7 @@ export const CreditMarketplace: React.FC<CreditMarketplaceProps> = ({
   const [fundAmount, setFundAmount] = useState<string>('5000');
   const [fundingLineId, setFundingLineId] = useState<string>('');
   const [showTooltip, setShowTooltip] = useState<boolean>(false);
+  const [poolSortBy, setPoolSortBy] = useState<'default' | 'util_asc' | 'util_desc' | 'rate_asc' | 'rate_desc'>('default');
 
   const handleFund = (lineId: string) => {
     const val = parseFloat(fundAmount);
@@ -79,13 +80,40 @@ export const CreditMarketplace: React.FC<CreditMarketplaceProps> = ({
 
         {/* Corridor Credit Pools Grid */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <h3 className="font-bold text-slate-200 text-sm">Corridor Liquidity Pools</h3>
-            <span className="text-xs text-slate-500">Financiers supply USDC to earn on-chain trade yield</span>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">Sort:</span>
+              {([
+                { key: 'default',   label: 'Default' },
+                { key: 'util_desc', label: 'Util ↓' },
+                { key: 'util_asc',  label: 'Util ↑' },
+                { key: 'rate_asc',  label: 'Rate ↓' },
+                { key: 'rate_desc', label: 'Rate ↑' },
+              ] as const).map(({ key, label }) => (
+                <button
+                  key={key}
+                  onClick={() => setPoolSortBy(key)}
+                  className={`px-2 py-0.5 rounded text-[9px] font-bold border transition-all ${
+                    poolSortBy === key
+                      ? 'bg-violet-600 text-white border-violet-500'
+                      : 'bg-slate-900 text-slate-500 border-slate-800 hover:text-slate-300'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {creditLines.map((line) => (
+            {[...creditLines].sort((a, b) => {
+              if (poolSortBy === 'util_desc') return b.utilizationRate - a.utilizationRate;
+              if (poolSortBy === 'util_asc')  return a.utilizationRate - b.utilizationRate;
+              if (poolSortBy === 'rate_asc')  return a.riskTierRates.Navigator - b.riskTierRates.Navigator;
+              if (poolSortBy === 'rate_desc') return b.riskTierRates.Navigator - a.riskTierRates.Navigator;
+              return 0;
+            }).map((line) => (
               <div
                 key={line.id}
                 className="bg-slate-950 border border-slate-800 rounded-2xl p-5 space-y-4 hover:border-slate-700 transition-colors flex flex-col justify-between"
