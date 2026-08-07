@@ -173,6 +173,18 @@ export default function App() {
     setTimeout(() => setSuccessToast(null), 5000);
   };
 
+  // Escape key: close guide board and dismiss active toast
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setShowGuide(false);
+        setSuccessToast(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   // Helper: Append event to the Soroban Ledger
   const handleAddLedgerEvent = (
     type: 'CONTRACT_CALL' | 'SEP24_FUNDING' | 'PATH_PAYMENT' | 'ZK_VERIFY' | 'ESCROW_RELEASE',
