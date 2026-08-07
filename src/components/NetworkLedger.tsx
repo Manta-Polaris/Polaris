@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { LedgerEvent } from '../types';
-import { Terminal, Shield, Network, Zap, CheckCircle, RefreshCw } from 'lucide-react';
+import { Terminal, Shield, Network, Zap, CheckCircle, RefreshCw, Copy, Check } from 'lucide-react';
 
 interface NetworkLedgerProps {
   events: LedgerEvent[];
@@ -10,7 +10,20 @@ interface NetworkLedgerProps {
 export const NetworkLedger: React.FC<NetworkLedgerProps> = ({ events, onClear }) => {
   const [ledgerNumber, setLedgerNumber] = useState(5891402);
   const [blockTime, setBlockTime] = useState(4.2);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [copyToast, setCopyToast] = useState<boolean>(false);
   const logEndRef = useRef<HTMLDivElement>(null);
+
+  const handleCopy = (txHash: string, evtId: string) => {
+    navigator.clipboard.writeText(txHash).then(() => {
+      setCopiedId(evtId);
+      setCopyToast(true);
+      setTimeout(() => {
+        setCopiedId(null);
+        setCopyToast(false);
+      }, 1500);
+    });
+  };
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -27,7 +40,14 @@ export const NetworkLedger: React.FC<NetworkLedgerProps> = ({ events, onClear })
   }, [events]);
 
   return (
-    <div className="bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden flex flex-col h-full font-mono text-xs">
+    <div className="relative bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden flex flex-col h-full font-mono text-xs">
+      {/* Copy toast */}
+      {copyToast && (
+        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-50 bg-slate-800 border border-emerald-700 text-emerald-400 text-[10px] font-bold px-3 py-1.5 rounded-full flex items-center space-x-1.5 shadow-lg pointer-events-none">
+          <Check size={11} />
+          <span>Tx hash copied!</span>
+        </div>
+      )}
       {/* Header */}
       <div className="bg-slate-900 border-b border-slate-800 px-4 py-3 flex items-center justify-between">
         <div className="flex items-center space-x-2">
@@ -108,7 +128,19 @@ export const NetworkLedger: React.FC<NetworkLedgerProps> = ({ events, onClear })
                 </div>
 
                 <div className="flex items-center justify-between text-[10px] text-slate-500 pt-1">
-                  <span>Tx: <strong className="text-slate-400">{evt.txHash.substring(0, 16)}...</strong></span>
+                  <span className="flex items-center space-x-1.5">
+                    <span>Tx: <strong className="text-slate-400">{evt.txHash.substring(0, 16)}...</strong></span>
+                    <button
+                      onClick={() => handleCopy(evt.txHash, evt.id)}
+                      className="text-slate-600 hover:text-slate-300 transition-colors p-0.5 rounded"
+                      title="Copy full tx hash"
+                    >
+                      {copiedId === evt.id
+                        ? <Check size={11} className="text-emerald-400" />
+                        : <Copy size={11} />
+                      }
+                    </button>
+                  </span>
                   <span className="text-slate-600 hover:text-slate-400 cursor-pointer">View on Stellarexp...</span>
                 </div>
               </div>
