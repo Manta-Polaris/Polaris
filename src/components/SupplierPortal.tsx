@@ -20,6 +20,7 @@ export const SupplierPortal: React.FC<SupplierPortalProps> = ({
   const [tradeSearch, setTradeSearch] = useState<string>('');
   const [tradeStatusFilter, setTradeStatusFilter] = useState<'ALL' | 'LOCKED' | 'RELEASED' | 'DISPUTED'>('ALL');
   const [disputeModal, setDisputeModal] = useState<Trade | null>(null);
+  const [qrHighContrast, setQrHighContrast] = useState<boolean>(false);
 
   // Mock dispute details — keyed by trade id, fallback for any unknown trade
   const MOCK_DISPUTES: Record<string, { reason: string; raisedBy: string; timestamp: string }> = {
@@ -218,14 +219,31 @@ export const SupplierPortal: React.FC<SupplierPortalProps> = ({
           {/* QR Code Detail Panel */}
           <div className="bg-slate-950 border border-slate-800 rounded-2xl p-5 flex flex-col items-center justify-between">
             <div className="text-center space-y-1 w-full">
-              <div className="font-bold text-slate-200 text-xs">Dynamic Escrow QR</div>
+              <div className="flex items-center justify-between">
+                <div className="font-bold text-slate-200 text-xs">Dynamic Escrow QR</div>
+                <button
+                  onClick={() => setQrHighContrast((v) => !v)}
+                  className={`text-[9px] font-bold px-2 py-0.5 rounded border transition-all uppercase tracking-wide ${
+                    qrHighContrast
+                      ? 'bg-yellow-400 text-slate-900 border-yellow-400'
+                      : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-slate-200'
+                  }`}
+                  title="Toggle high-contrast QR"
+                >
+                  {qrHighContrast ? 'High Contrast ON' : 'High Contrast'}
+                </button>
+              </div>
               <p className="text-[10px] text-slate-500">Scan code to pay merchant directly into trade escrow</p>
             </div>
 
-            <div className="bg-white p-4 rounded-xl my-4 flex items-center justify-center border-4 border-amber-500">
+            <div className={`p-4 rounded-xl my-4 flex items-center justify-center border-4 ${
+              qrHighContrast
+                ? 'bg-black border-yellow-400'
+                : 'bg-white border-amber-500'
+            }`}>
               {/* Simulated QR Code */}
               <div className="relative">
-                <svg className="w-28 h-28 text-slate-900" viewBox="0 0 100 100">
+                <svg className={`w-28 h-28 ${qrHighContrast ? 'text-yellow-400' : 'text-slate-900'}`} viewBox="0 0 100 100">
                   <path d="M 0 0 h 30 v 10 h -20 v 20 h -10 Z M 70 0 h 30 v 30 h -10 v -20 h -20 Z M 0 70 h 10 v 20 h 20 v 10 h -30 Z M 90 70 v 20 h -20 v 10 h 30 v -30 Z" fill="currentColor"/>
                   <rect x="15" y="15" width="20" height="20" fill="currentColor"/>
                   <rect x="65" y="15" width="20" height="20" fill="currentColor"/>
@@ -235,7 +253,7 @@ export const SupplierPortal: React.FC<SupplierPortalProps> = ({
                 </svg>
                 {/* Polaris Star center badge */}
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="bg-amber-500 text-slate-900 p-1.5 rounded-full">
+                  <div className={`p-1.5 rounded-full ${qrHighContrast ? 'bg-yellow-400 text-black' : 'bg-amber-500 text-slate-900'}`}>
                     <Store size={14} className="stroke-[2.5]" />
                   </div>
                 </div>
