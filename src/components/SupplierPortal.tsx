@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Supplier, Trade, Currency } from '../types';
-import { Store, ArrowRight, DollarSign, QrCode, FileText, CheckCircle2, UserCheck, HelpCircle, Search } from 'lucide-react';
+import { Store, ArrowRight, DollarSign, QrCode, FileText, CheckCircle2, UserCheck, HelpCircle, Search, AlertTriangle, X } from 'lucide-react';
 
 interface SupplierPortalProps {
   suppliers: Supplier[];
@@ -19,6 +19,19 @@ export const SupplierPortal: React.FC<SupplierPortalProps> = ({
   const [selectedInvoiceTrade, setSelectedInvoiceTrade] = useState<Trade | null>(null);
   const [tradeSearch, setTradeSearch] = useState<string>('');
   const [tradeStatusFilter, setTradeStatusFilter] = useState<'ALL' | 'LOCKED' | 'RELEASED' | 'DISPUTED'>('ALL');
+  const [disputeModal, setDisputeModal] = useState<Trade | null>(null);
+
+  // Mock dispute details — keyed by trade id, fallback for any unknown trade
+  const MOCK_DISPUTES: Record<string, { reason: string; raisedBy: string; timestamp: string }> = {
+    default: {
+      reason: 'Buyer claims goods were not delivered as described. Partial shipment received — 3 of 6 cartons missing on arrival at Dantokpa Market checkpoint.',
+      raisedBy: 'Aisha Bello (Buyer)',
+      timestamp: new Date(Date.now() - 1000 * 60 * 47).toLocaleString(),
+    },
+  };
+
+  const getDisputeDetails = (trade: Trade) =>
+    MOCK_DISPUTES[trade.id] ?? { ...MOCK_DISPUTES.default, timestamp: trade.createdAt };
 
   const activeSupplier = suppliers.find((s) => s.id === activeSupplierId) || suppliers[0];
 
@@ -334,17 +347,25 @@ export const SupplierPortal: React.FC<SupplierPortalProps> = ({
                         </span>
                       </td>
                       <td className="py-4">
-                        <span
-                          className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                            trade.status === 'LOCKED'
-                              ? 'bg-amber-950 text-amber-400 border border-amber-900'
-                              : trade.status === 'RELEASED'
-                              ? 'bg-emerald-950 text-emerald-400 border border-emerald-900'
-                              : 'bg-red-950 text-red-400 border border-red-900'
-                          }`}
-                        >
-                          {trade.status}
-                        </span>
+                        {trade.status === 'DISPUTED' ? (
+                          <button
+                            onClick={() => setDisputeModal(trade)}
+                            className="px-2 py-0.5 rounded text-[10px] font-bold bg-red-950 text-red-400 border border-red-900 hover:bg-red-900 transition-colors cursor-pointer"
+                            title="View dispute details"
+                          >
+                            {trade.status}
+                          </button>
+                        ) : (
+                          <span
+                            className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                              trade.status === 'LOCKED'
+                                ? 'bg-amber-950 text-amber-400 border border-amber-900'
+                                : 'bg-emerald-950 text-emerald-400 border border-emerald-900'
+                            }`}
+                          >
+                            {trade.status}
+                          </span>
+                        )}
                       </td>
                       <td className="py-4">
                         {trade.status === 'LOCKED' ? (
@@ -390,6 +411,76 @@ export const SupplierPortal: React.FC<SupplierPortalProps> = ({
           )}
         </div>
       </div>
+
+      {/* Dispute Detail Modal */}
+      {disputeModal && (() => {
+        const details = getDisputeDetails(disputeModal);
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+            <div className="bg-slate-900 border border-red-900 rounded-2xl p-6 max-w-sm w-full shadow-2xl space-y-4">
+              {/* Modal header */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <AlertTriangle size={16} className="text-red-400" />
+                  <span className="text-sm font-black text-red-400 uppercase tracking-wider">Dispute Filed</span>
+                </div>
+                <button
+                  onClick={() => setDisputeModal(null)}
+                  className="text-slate-500 hover:text-slate-200 transition-colors"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              {/* Trade info */}
+              <div className="bg-slate-950 border border-slate-800 rounded-xl p-3 space-y-1 text-xs">
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Trader</span>
+                  <span className="text-slate-200 font-bold">{disputeModal.traderName}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Amount</span>
+                  <span className="text-slate-200 font-bold">${disputeModal.amountUSDC} USDC</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Tx Hash</span>
+                  <span className="text-slate-400 font-mono text-[10px]">{disputeModal.escrowTxHash.substring(0, 14)}...</span>
+                </div>
+              </div>
+
+              {/* Dispute details */}
+              <div className="space-y-2">
+                <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Dispute Reason</div>
+                <p className="text-xs text-slate-300 leading-relaxed bg-red-950/20 border border-red-900/40 rounded-xl p-3">
+                  {details.reason}
+                </p>
+                <div className="flex justify-between text-[10px]">
+                  <span className="text-slate-500">Raised by: <strong className="text-slate-300">{details.raisedBy}</strong></span>
+                  <span className="text-slate-500">{details.timestamp}</span>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-2 pt-1">
+                <button
+                  onClick={() => setDisputeModal(null)}
+                  className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-2 rounded-xl text-[10px] uppercase tracking-wide transition-all"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={() => {
+                    setDisputeModal(null);
+                  }}
+                  className="flex-1 bg-red-950 hover:bg-red-900 text-red-400 border border-red-900 font-bold py-2 rounded-xl text-[10px] uppercase tracking-wide transition-all"
+                >
+                  Escalate to Arbitration
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 };
