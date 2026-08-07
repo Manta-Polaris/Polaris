@@ -510,6 +510,46 @@ export const MobileTraderApp: React.FC<MobileTraderAppProps> = ({
                 ))}
               </div>
             </div>
+
+            {/* Trade History */}
+            {appState.trades.filter(t => t.status !== 'LOCKED').length > 0 && (
+              <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 space-y-2">
+                <div className="flex justify-between items-center">
+                  <h4 className="text-xs font-bold text-slate-300">Trade History</h4>
+                  <span className="text-[9px] bg-slate-900 text-slate-400 px-2 py-0.5 rounded font-mono border border-slate-800">
+                    {appState.trades.filter(t => t.status !== 'LOCKED').length} trades
+                  </span>
+                </div>
+                <div className="space-y-1.5 pt-1 max-h-[180px] overflow-y-auto">
+                  {appState.trades.filter(t => t.status !== 'LOCKED').map((trade) => (
+                    <div
+                      key={trade.id}
+                      className="flex items-center justify-between p-2.5 bg-slate-950 rounded-xl border border-slate-800/80 text-[10px]"
+                    >
+                      <div className="flex items-center space-x-2 min-w-0">
+                        <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                          trade.status === 'RELEASED' ? 'bg-emerald-500' :
+                          trade.status === 'DISPUTED' ? 'bg-red-500' : 'bg-slate-500'
+                        }`} />
+                        <div className="min-w-0">
+                          <div className="text-slate-300 font-semibold truncate">{trade.supplierName}</div>
+                          <div className="text-slate-500 text-[9px]">{trade.createdAt}</div>
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0 ml-2">
+                        <div className="font-bold text-slate-200">${trade.amountUSDC} USDC</div>
+                        <div className={`text-[9px] font-bold ${
+                          trade.status === 'RELEASED' ? 'text-emerald-400' :
+                          trade.status === 'DISPUTED' ? 'text-red-400' : 'text-slate-400'
+                        }`}>
+                          {trade.status}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
