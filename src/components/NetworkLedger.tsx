@@ -12,6 +12,7 @@ export const NetworkLedger: React.FC<NetworkLedgerProps> = ({ events, onClear })
   const [blockTime, setBlockTime] = useState(4.2);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [copyToast, setCopyToast] = useState<boolean>(false);
+  const [eventTypeFilter, setEventTypeFilter] = useState<'ALL' | 'CONTRACT_CALL' | 'SEP24_FUNDING' | 'PATH_PAYMENT' | 'ZK_VERIFY' | 'ESCROW_RELEASE'>('ALL');
   const logEndRef = useRef<HTMLDivElement>(null);
 
   const handleCopy = (txHash: string, evtId: string) => {
@@ -72,6 +73,36 @@ export const NetworkLedger: React.FC<NetworkLedgerProps> = ({ events, onClear })
         </div>
       </div>
 
+      {/* Filter chips */}
+      <div className="px-4 py-2 border-b border-slate-800/60 flex items-center gap-1.5 flex-wrap bg-slate-900/40">
+        {([
+          { key: 'ALL',           label: 'All',         color: 'bg-slate-700 text-slate-200 border-slate-600' },
+          { key: 'CONTRACT_CALL', label: 'Soroban',     color: 'bg-indigo-950 text-indigo-400 border-indigo-900' },
+          { key: 'ZK_VERIFY',     label: 'ZK Verify',   color: 'bg-violet-950 text-violet-400 border-violet-900' },
+          { key: 'PATH_PAYMENT',  label: 'Path Pay',    color: 'bg-cyan-950 text-cyan-400 border-cyan-900' },
+          { key: 'ESCROW_RELEASE',label: 'Escrow',      color: 'bg-emerald-950 text-emerald-400 border-emerald-900' },
+          { key: 'SEP24_FUNDING', label: 'SEP-24',      color: 'bg-amber-950 text-amber-400 border-amber-900' },
+        ] as const).map(({ key, label, color }) => {
+          const count = key === 'ALL' ? events.length : events.filter(e => e.type === key).length;
+          return (
+            <button
+              key={key}
+              onClick={() => setEventTypeFilter(key)}
+              className={`px-2 py-0.5 rounded text-[9px] font-bold border transition-all flex items-center gap-1 ${
+                eventTypeFilter === key
+                  ? color
+                  : 'bg-slate-900 text-slate-600 border-slate-800 hover:text-slate-400'
+              }`}
+            >
+              {label}
+              <span className={`text-[8px] font-black ${eventTypeFilter === key ? 'opacity-80' : 'opacity-50'}`}>
+                {count}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
       {/* Terminal View */}
       <div className="flex-1 p-4 overflow-y-auto space-y-3 max-h-[300px] md:max-h-[450px]">
         {events.length === 0 ? (
@@ -81,7 +112,20 @@ export const NetworkLedger: React.FC<NetworkLedgerProps> = ({ events, onClear })
             <span className="text-[10px] text-slate-600">Fund a trade, join a guild, or generate ZK-proofs to see Soroban contracts execute.</span>
           </div>
         ) : (
-          events.map((evt) => {
+          (() => {
+            const filteredEvents = eventTypeFilter === 'ALL'
+              ? events
+              : events.filter(e => e.type === eventTypeFilter);
+
+            if (filteredEvents.length === 0) {
+              return (
+                <div className="text-slate-600 text-center py-6 text-[10px]">
+                  No events match the selected filter.
+                </div>
+              );
+            }
+
+            return filteredEvents.map((evt) => {
             let badgeBg = 'bg-slate-800 text-slate-300';
             let label = evt.type;
             if (evt.type === 'CONTRACT_CALL') {
@@ -145,7 +189,8 @@ export const NetworkLedger: React.FC<NetworkLedgerProps> = ({ events, onClear })
                 </div>
               </div>
             );
-          })
+          });
+          })()
         )}
         <div ref={logEndRef} />
       </div>
