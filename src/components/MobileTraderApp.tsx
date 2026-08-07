@@ -898,24 +898,49 @@ export const MobileTraderApp: React.FC<MobileTraderAppProps> = ({
               </div>
 
               {/* Progress bar to next tier */}
-              <div className="space-y-1.5">
-                <div className="flex justify-between text-[9px] text-slate-400 font-bold uppercase">
-                  <span>Progress to {appState.activeTier === 'Rising' ? 'Navigator' : 'Polaris'}</span>
-                  <span>{appState.completedCount}/{appState.activeTier === 'Rising' ? 6 : 16} completed</span>
+              {appState.activeTier === 'Polaris' ? (
+                <div className="space-y-1.5">
+                  <div className="flex justify-between text-[9px] text-slate-400 font-bold uppercase">
+                    <span>Max Tier Reached</span>
+                    <span className="text-amber-500">Polaris ★</span>
+                  </div>
+                  <div className="w-full bg-slate-950 h-2 rounded-full overflow-hidden border border-slate-800">
+                    <div className="bg-gradient-to-r from-amber-500 to-amber-300 h-full w-full rounded-full" />
+                  </div>
+                  <p className="text-[9px] text-amber-500 font-bold text-center">You have reached the highest reputation tier!</p>
                 </div>
-                <div className="w-full bg-slate-950 h-2 rounded-full overflow-hidden border border-slate-855">
-                  <div
-                    style={{
-                      width: `${
-                        appState.activeTier === 'Rising'
-                          ? (appState.completedCount / 6) * 100
-                          : (appState.completedCount / 16) * 100
-                      }%`
-                    }}
-                    className="bg-gradient-to-r from-cyan-500 to-amber-500 h-full rounded-full"
-                  />
+              ) : (
+                <div className="space-y-1.5">
+                  {(() => {
+                    const nextTier = appState.activeTier === 'Rising' ? 'Navigator' : 'Polaris';
+                    const target = appState.activeTier === 'Rising' ? 6 : 16;
+                    const remaining = Math.max(0, target - appState.completedCount);
+                    const pct = Math.min(100, Math.round((appState.completedCount / target) * 100));
+                    return (
+                      <>
+                        <div className="flex justify-between text-[9px] text-slate-400 font-bold uppercase">
+                          <span>Progress to {nextTier} Tier</span>
+                          <span className="text-cyan-400">{appState.completedCount}/{target} trades</span>
+                        </div>
+                        <div className="w-full bg-slate-950 h-2.5 rounded-full overflow-hidden border border-slate-800">
+                          <div
+                            style={{ width: `${pct}%` }}
+                            className="bg-gradient-to-r from-cyan-500 to-amber-500 h-full rounded-full transition-all duration-500"
+                          />
+                        </div>
+                        <div className="flex justify-between text-[9px]">
+                          <span className="text-slate-500">{pct}% complete</span>
+                          <span className="text-amber-400 font-bold">
+                            {remaining === 0
+                              ? 'Upgrading tier...'
+                              : `${remaining} trade${remaining !== 1 ? 's' : ''} to ${nextTier}`}
+                          </span>
+                        </div>
+                      </>
+                    );
+                  })()}
                 </div>
-              </div>
+              )}
 
               {/* ZK Proof generator interaction */}
               <div className="bg-slate-950 p-4 rounded-xl border border-slate-850 space-y-3">
