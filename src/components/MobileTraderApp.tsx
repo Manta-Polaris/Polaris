@@ -1088,7 +1088,21 @@ export const MobileTraderApp: React.FC<MobileTraderAppProps> = ({
                 <p className="text-[10px] text-slate-400 mt-1">Pool USDC with 15 sister-traders to import bulk goods cheaper.</p>
               </div>
 
-              {appState.guildPools.map((pool) => {
+              {appState.guildPools.length === 0 ? (
+                <div className="bg-slate-900/40 border border-dashed border-slate-800 p-6 rounded-2xl text-center space-y-2">
+                  <span className="text-2xl block">👥</span>
+                  <div className="text-xs font-semibold text-slate-400">No guild pools joined yet</div>
+                  <p className="text-[10px] text-slate-500 leading-normal max-w-[240px] mx-auto">
+                    Join a wholesale buying pool to split bulk import costs with other traders and unlock better pricing.
+                  </p>
+                  <button
+                    onClick={() => setActiveTab('home')}
+                    className="mt-1.5 bg-cyan-500 text-slate-900 font-bold text-[10px] px-3 py-1.5 rounded-lg uppercase tracking-wide inline-flex items-center"
+                  >
+                    Browse Pools
+                  </button>
+                </div>
+              ) : appState.guildPools.map((pool) => {
                 const filledPct = Math.round((pool.currentUSDC / pool.targetUSDC) * 100);
 
                 return (
