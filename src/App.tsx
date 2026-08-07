@@ -520,6 +520,14 @@ export default function App() {
           </button>
           <div className="h-6 w-[1px] bg-slate-900 hidden md:block" />
           <div className="text-right hidden md:block">
+            <span className="text-[10px] text-slate-500 uppercase tracking-widest block font-bold">Total Volume</span>
+            <span className="text-xs text-amber-400 font-bold font-mono flex items-center justify-end">
+              ${appState.trades.reduce((sum, t) => sum + t.amountUSDC, 0).toLocaleString(undefined, { minimumFractionDigits: 0 })}
+              <span className="text-[9px] text-slate-500 ml-1">USDC</span>
+            </span>
+          </div>
+          <div className="h-6 w-[1px] bg-slate-900 hidden md:block" />
+          <div className="text-right hidden md:block">
             <span className="text-[10px] text-slate-500 uppercase tracking-widest block font-bold">Ledger State</span>
             <span className="text-xs text-emerald-500 font-bold font-mono flex items-center justify-end">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse mr-1.5" /> Core v21.4.0
