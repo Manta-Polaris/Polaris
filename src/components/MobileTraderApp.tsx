@@ -56,6 +56,7 @@ export const MobileTraderApp: React.FC<MobileTraderAppProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'home' | 'new_trade' | 'release' | 'my_star' | 'credit' | 'guild'>('home');
   const [isOffline, setIsOffline] = useState<boolean>(false);
+  const [queuedSigCount, setQueuedSigCount] = useState<number>(0);
   const [simulatedTime, setSimulatedTime] = useState<string>('09:41');
 
   // New Trade Form states
@@ -205,9 +206,11 @@ export const MobileTraderApp: React.FC<MobileTraderAppProps> = ({
         'local_sign_offline',
         `Offline signature generated: Queue escrow release for trade ${releasingTrade?.id}. Payload stored in local device cache.`
       );
+      setQueuedSigCount((c) => c + 1);
       // Wait a moment, auto reconnect and broadcast
       setTimeout(() => {
         setIsOffline(false);
+        setQueuedSigCount(0);
         onAddLedgerEvent(
           'CONTRACT_CALL',
           'TradeEscrow',
@@ -364,6 +367,7 @@ export const MobileTraderApp: React.FC<MobileTraderAppProps> = ({
             <button
               onClick={() => {
                 setIsOffline(!isOffline);
+                if (isOffline) setQueuedSigCount(0);
                 onAddLedgerEvent(
                   'CONTRACT_CALL',
                   'StellarNetwork',
@@ -371,13 +375,18 @@ export const MobileTraderApp: React.FC<MobileTraderAppProps> = ({
                   `Trader network state toggled: ${!isOffline ? 'OFFLINE_MODE (Local Signature)' : 'ONLINE_MODE (Standard Stellar Ingress)'}`
                 );
               }}
-              className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold border transition-colors flex items-center space-x-1 ${
+              className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold border transition-colors flex items-center space-x-1 relative ${
                 isOffline
                   ? 'bg-rose-950/60 text-rose-400 border-rose-900'
                   : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-white'
               }`}
             >
               <span>{isOffline ? 'Go Online' : 'Go Offline'}</span>
+              {isOffline && queuedSigCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 bg-rose-500 text-white text-[8px] font-black w-3.5 h-3.5 rounded-full flex items-center justify-center leading-none">
+                  {queuedSigCount}
+                </span>
+              )}
             </button>
           </div>
 
