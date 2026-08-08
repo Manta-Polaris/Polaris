@@ -17,7 +17,9 @@ import {
   HelpCircle,
   CheckCircle,
   CheckCircle2,
-  RefreshCw
+  RefreshCw,
+  Sun,
+  Moon
 } from 'lucide-react';
 
 export default function App() {
@@ -149,6 +151,16 @@ export default function App() {
   const [activeWebTab, setActiveWebTab] = useState<'supplier' | 'defi' | 'ledger'>('supplier');
   const [showGuide, setShowGuide] = useState<boolean>(true);
   const [successToast, setSuccessToast] = useState<string | null>(null);
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    try { return (localStorage.getItem('polaris_theme') as 'dark' | 'light') || 'dark'; }
+    catch { return 'dark'; }
+  });
+
+  const toggleTheme = () => {
+    const next = theme === 'dark' ? 'light' : 'dark';
+    setTheme(next);
+    try { localStorage.setItem('polaris_theme', next); } catch {}
+  };
 
   // Recalculate Tiers dynamically based on completed count
   useEffect(() => {
@@ -476,7 +488,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col antialiased">
+    <div className={`min-h-screen flex flex-col antialiased ${theme === 'dark' ? 'bg-slate-950 text-slate-100' : 'bg-slate-100 text-slate-900'}`}>
       {/* Toast Alert */}
       {successToast && (
         <div className="fixed top-6 right-6 bg-slate-900 border-2 border-amber-500 rounded-2xl p-4 shadow-[0_20px_50px_rgba(0,0,0,0.8)] z-50 max-w-sm animate-bounce flex items-start space-x-3">
@@ -517,6 +529,13 @@ export default function App() {
           >
             <HelpCircle size={14} />
             <span>{showGuide ? 'Hide Guide' : 'Ecosystem Walkthrough'}</span>
+          </button>
+          <button
+            onClick={toggleTheme}
+            className="bg-slate-900 hover:bg-slate-800 text-slate-300 font-bold p-2 rounded-xl border border-slate-800 transition-all"
+            title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            {theme === 'dark' ? <Sun size={14} className="text-amber-400" /> : <Moon size={14} className="text-slate-400" />}
           </button>
           <div className="h-6 w-[1px] bg-slate-900 hidden md:block" />
           <div className="text-right hidden md:block">
