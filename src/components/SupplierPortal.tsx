@@ -332,6 +332,7 @@ export const SupplierPortal: React.FC<SupplierPortalProps> = ({
                     <th className="pb-3 font-semibold">Local Conversion</th>
                     <th className="pb-3 font-semibold">Status</th>
                     <th className="pb-3 font-semibold">Fulfillment / Action</th>
+                    <th className="pb-3 w-6"></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/60">
@@ -373,12 +374,13 @@ export const SupplierPortal: React.FC<SupplierPortalProps> = ({
                     <th className="pb-3 font-semibold">Local Conversion</th>
                     <th className="pb-3 font-semibold">Status</th>
                     <th className="pb-3 font-semibold">Fulfillment / Action</th>
+                    <th className="pb-3 w-6"></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/60">
                   {filteredTrades.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="py-8 text-center">
+                      <td colSpan={6} className="py-8 text-center">
                         {tradeStatusFilter === 'DISPUTED' ? (
                           <div className="flex flex-col items-center space-y-2">
                             <span className="text-2xl">🤝</span>
