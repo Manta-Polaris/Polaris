@@ -13,7 +13,36 @@ export const NetworkLedger: React.FC<NetworkLedgerProps> = ({ events, onClear })
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [copyToast, setCopyToast] = useState<boolean>(false);
   const [eventTypeFilter, setEventTypeFilter] = useState<'ALL' | 'CONTRACT_CALL' | 'SEP24_FUNDING' | 'PATH_PAYMENT' | 'ZK_VERIFY' | 'ESCROW_RELEASE'>('ALL');
+  const [now, setNow] = useState(() => Date.now());
+  const eventTimesRef = useRef<Record<string, number>>({});
   const logEndRef = useRef<HTMLDivElement>(null);
+
+  // Track when each event first appears
+  useEffect(() => {
+    events.forEach((evt) => {
+      if (!eventTimesRef.current[evt.id]) {
+        eventTimesRef.current[evt.id] = Date.now();
+      }
+    });
+  }, [events]);
+
+  // Tick every 30s so relative labels stay fresh
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 30000);
+    return () => clearInterval(t);
+  }, []);
+
+  const toRelative = (evtId: string, fallback: string): string => {
+    const ts = eventTimesRef.current[evtId];
+    if (!ts) return fallback;
+    const secs = Math.floor((now - ts) / 1000);
+    if (secs < 60) return 'just now';
+    const mins = Math.floor(secs / 60);
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    return `${Math.floor(hrs / 24)}d ago`;
+  };
 
   const handleCopy = (txHash: string, evtId: string) => {
     navigator.clipboard.writeText(txHash).then(() => {
@@ -155,7 +184,12 @@ export const NetworkLedger: React.FC<NetworkLedgerProps> = ({ events, onClear })
                     <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${badgeBg}`}>
                       {label}
                     </span>
-                    <span className="text-slate-400 text-[10px]">{evt.timestamp}</span>
+                    <span
+                      className="text-slate-400 text-[10px] cursor-default"
+                      title={evt.timestamp}
+                    >
+                      {toRelative(evt.id, evt.timestamp)}
+                    </span>
                   </div>
                   <div className="flex items-center space-x-1.5 text-[10px]">
                     <span className="text-emerald-500 flex items-center">
