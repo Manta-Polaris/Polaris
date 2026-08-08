@@ -590,9 +590,27 @@ export const MobileTraderApp: React.FC<MobileTraderAppProps> = ({
                       value={tradeAmountUSDC}
                       onChange={(e) => setTradeAmountUSDC(e.target.value)}
                       placeholder="Amount to lock"
-                      className="w-full bg-slate-950 text-xs text-slate-100 border border-slate-800 rounded-xl pl-7 pr-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-amber-500 font-bold font-mono"
+                      className={`w-full bg-slate-950 text-xs text-slate-100 border rounded-xl pl-7 pr-3 py-2.5 focus:outline-none font-bold font-mono ${
+                        (() => {
+                          const amt = parseFloat(tradeAmountUSDC);
+                          if (tradeAmountUSDC && (isNaN(amt) || amt <= 0 || amt < 10 || amt > appState.walletBalanceUSDC))
+                            return 'border-red-700 focus:ring-1 focus:ring-red-600';
+                          return 'border-slate-800 focus:ring-1 focus:ring-amber-500';
+                        })()
+                      }`}
                     />
                   </div>
+                  {(() => {
+                    const amt = parseFloat(tradeAmountUSDC);
+                    if (!tradeAmountUSDC) return null;
+                    if (isNaN(amt) || amt <= 0)
+                      return <p className="text-[9px] text-red-400 font-bold">Enter a valid amount.</p>;
+                    if (amt < 10)
+                      return <p className="text-[9px] text-red-400 font-bold">Minimum escrow amount is $10 USDC.</p>;
+                    if (amt > appState.walletBalanceUSDC)
+                      return <p className="text-[9px] text-red-400 font-bold">Insufficient balance — you have ${appState.walletBalanceUSDC.toFixed(2)} USDC.</p>;
+                    return <p className="text-[9px] text-emerald-400 font-bold">✓ Amount looks good.</p>;
+                  })()}
                 </div>
 
                 {/* Local Conversion preview */}
