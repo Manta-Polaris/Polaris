@@ -336,8 +336,24 @@ export const SupplierPortal: React.FC<SupplierPortalProps> = ({
                 <tbody className="divide-y divide-slate-800/60">
                   {filteredTrades.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="py-8 text-center text-slate-500 text-xs">
-                        No trades match your search or filter.
+                      <td colSpan={5} className="py-8 text-center">
+                        {tradeStatusFilter === 'DISPUTED' ? (
+                          <div className="flex flex-col items-center space-y-2">
+                            <span className="text-2xl">🤝</span>
+                            <div className="text-xs font-semibold text-slate-400">No disputes on record</div>
+                            <p className="text-[10px] text-slate-500 max-w-[260px] leading-normal">
+                              All trades are settling cleanly. Disputes are raised when a buyer flags a delivery issue within the 3-day window.
+                            </p>
+                            <button
+                              onClick={() => setTradeStatusFilter('ALL')}
+                              className="mt-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-[10px] px-3 py-1.5 rounded-lg uppercase tracking-wide transition-all"
+                            >
+                              View All Trades
+                            </button>
+                          </div>
+                        ) : (
+                          <span className="text-slate-500 text-xs">No trades match your search or filter.</span>
+                        )}
                       </td>
                     </tr>
                   ) : filteredTrades.map((trade) => (
