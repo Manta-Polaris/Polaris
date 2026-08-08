@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { CreditLine, ZKProof } from '../types';
-import { TrendingUp, Award, ShieldAlert, Coins, Plus, Check, Info, BarChart2 } from 'lucide-react';
+import { TrendingUp, Award, ShieldAlert, Coins, Plus, Check, Info, BarChart2, Copy } from 'lucide-react';
 
 interface CreditMarketplaceProps {
   creditLines: CreditLine[];
@@ -19,6 +19,14 @@ export const CreditMarketplace: React.FC<CreditMarketplaceProps> = ({
   const [fundingLineId, setFundingLineId] = useState<string>('');
   const [showTooltip, setShowTooltip] = useState<boolean>(false);
   const [poolSortBy, setPoolSortBy] = useState<'default' | 'util_asc' | 'util_desc' | 'rate_asc' | 'rate_desc'>('default');
+  const [copiedPoolId, setCopiedPoolId] = useState<string | null>(null);
+
+  const handleCopyPool = (lineId: string, address: string) => {
+    navigator.clipboard.writeText(address).then(() => {
+      setCopiedPoolId(lineId);
+      setTimeout(() => setCopiedPoolId(null), 1500);
+    });
+  };
 
   const handleFund = (lineId: string) => {
     const val = parseFloat(fundAmount);
@@ -124,6 +132,16 @@ export const CreditMarketplace: React.FC<CreditMarketplaceProps> = ({
                     <div>
                       <div className="text-xs text-slate-400">Trade Route Corridor</div>
                       <h4 className="font-bold text-slate-200 text-sm mt-0.5">{line.corridor}</h4>
+                      <button
+                        onClick={() => handleCopyPool(line.id, `GPOLARIS_POOL_${line.id.toUpperCase()}_USDC_ESCROW`)}
+                        className="flex items-center space-x-1 text-[9px] text-slate-500 hover:text-slate-300 transition-colors mt-1 font-mono"
+                        title="Copy pool contract address"
+                      >
+                        {copiedPoolId === line.id
+                          ? <><Check size={10} className="text-emerald-400" /><span className="text-emerald-400">Copied!</span></>
+                          : <><Copy size={10} /><span>Copy pool address</span></>
+                        }
+                      </button>
                     </div>
                     <span className="text-[10px] bg-emerald-950 text-emerald-400 font-bold px-2.5 py-0.5 rounded-full">
                       APRL: {(12.5 + Math.random() * 3).toFixed(1)}% Yield
