@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Supplier, Trade, Currency } from '../types';
-import { Store, ArrowRight, DollarSign, QrCode, FileText, CheckCircle2, UserCheck, HelpCircle, Search, AlertTriangle, X } from 'lucide-react';
+import { Store, ArrowRight, DollarSign, QrCode, FileText, CheckCircle2, UserCheck, HelpCircle, Search, AlertTriangle, X, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface SupplierPortalProps {
   suppliers: Supplier[];
@@ -22,6 +22,7 @@ export const SupplierPortal: React.FC<SupplierPortalProps> = ({
   const [disputeModal, setDisputeModal] = useState<Trade | null>(null);
   const [disputeConfirmPending, setDisputeConfirmPending] = useState<boolean>(false);
   const [qrHighContrast, setQrHighContrast] = useState<boolean>(false);
+  const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
   const [isLoadingTrades, setIsLoadingTrades] = useState<boolean>(true);
 
   // Simulate initial data fetch
@@ -398,7 +399,11 @@ export const SupplierPortal: React.FC<SupplierPortalProps> = ({
                       </td>
                     </tr>
                   ) : filteredTrades.map((trade) => (
-                    <tr key={trade.id} className="hover:bg-slate-900/40">
+                    <React.Fragment key={trade.id}>
+                    <tr
+                      className="hover:bg-slate-900/40 cursor-pointer"
+                      onClick={() => setExpandedRowId(expandedRowId === trade.id ? null : trade.id)}
+                    >
                       <td className="py-4 font-semibold text-slate-200">
                         <div className="flex items-center space-x-2">
                           <div className="w-6 h-6 rounded-full bg-slate-800 flex items-center justify-center text-[10px] font-bold text-slate-300 border border-slate-700">
@@ -478,7 +483,48 @@ export const SupplierPortal: React.FC<SupplierPortalProps> = ({
                           <span className="text-red-500 text-[10px]">DISPUTE PENDING</span>
                         )}
                       </td>
+                      <td className="py-4 text-right">
+                        {expandedRowId === trade.id
+                          ? <ChevronUp size={13} className="text-slate-500 ml-auto" />
+                          : <ChevronDown size={13} className="text-slate-600 ml-auto" />
+                        }
+                      </td>
                     </tr>
+                    {expandedRowId === trade.id && (
+                      <tr className="bg-slate-900/60">
+                        <td colSpan={6} className="px-4 pb-4 pt-2">
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-[10px]">
+                            <div>
+                              <div className="text-slate-500 uppercase tracking-wider font-bold mb-0.5">Full Tx Hash</div>
+                              <div className="text-slate-300 font-mono break-all">{trade.escrowTxHash}</div>
+                            </div>
+                            <div>
+                              <div className="text-slate-500 uppercase tracking-wider font-bold mb-0.5">Verification</div>
+                              <div className="text-slate-300">{trade.verificationMethod.replace('_', ' ')}</div>
+                            </div>
+                            <div>
+                              <div className="text-slate-500 uppercase tracking-wider font-bold mb-0.5">Dispute Window</div>
+                              <div className="text-slate-300">{trade.disputeWindowDays} days</div>
+                            </div>
+                            <div>
+                              <div className="text-slate-500 uppercase tracking-wider font-bold mb-0.5">Created</div>
+                              <div className="text-slate-300">{trade.createdAt}</div>
+                            </div>
+                            {trade.releasedAt && (
+                              <div>
+                                <div className="text-slate-500 uppercase tracking-wider font-bold mb-0.5">Released</div>
+                                <div className="text-emerald-400">{trade.releasedAt}</div>
+                              </div>
+                            )}
+                            <div>
+                              <div className="text-slate-500 uppercase tracking-wider font-bold mb-0.5">Supplier ID</div>
+                              <div className="text-slate-300 font-mono">{trade.supplierId}</div>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                    </React.Fragment>
                   ))}
                 </tbody>
               </table>
