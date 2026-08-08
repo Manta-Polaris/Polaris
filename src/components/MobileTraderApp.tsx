@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Supplier, Trade, GuildPool, ZKProof, AppState, Currency } from '../types';
 import {
   Smartphone,
@@ -314,8 +314,9 @@ export const MobileTraderApp: React.FC<MobileTraderAppProps> = ({
     );
   };
 
-  // Active locked trades
-  const activeTrades = appState.trades.filter((t) => t.status === 'LOCKED');
+  // Track reputation baseline for trend indicator
+  const repBaselineRef = useRef<number>(appState.reputationPoints);
+  const repDelta = appState.reputationPoints - repBaselineRef.current;
 
   return (
     <div className="relative mx-auto w-[360px] h-[780px] bg-slate-950 rounded-[45px] p-3.5 border-[10px] border-slate-900 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)] overflow-hidden flex flex-col font-sans select-none z-10">
@@ -943,6 +944,10 @@ export const MobileTraderApp: React.FC<MobileTraderAppProps> = ({
                 <div className="text-right">
                   <span className="text-[9px] text-slate-500 uppercase font-mono block">Completed Escrows</span>
                   <span className="text-xs font-bold text-cyan-400 font-mono">{appState.completedCount} trades</span>
+                  <div className={`flex items-center justify-end space-x-0.5 mt-0.5 text-[9px] font-bold ${repDelta > 0 ? 'text-emerald-400' : repDelta < 0 ? 'text-red-400' : 'text-slate-500'}`}>
+                    <span>{repDelta > 0 ? '▲' : repDelta < 0 ? '▼' : '—'}</span>
+                    <span>{repDelta > 0 ? `+${repDelta}` : repDelta < 0 ? `${repDelta}` : 'No change'} pts</span>
+                  </div>
                 </div>
               </div>
 
