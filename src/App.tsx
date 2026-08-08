@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Analytics } from "@vercel/analytics/react"
 import { AppState, Trade, ZKProof, GuildPool, CreditLine, Supplier, LedgerEvent } from './types';
 import { INITIAL_SUPPLIERS } from './data/suppliers';
 import { MobileTraderApp } from './components/MobileTraderApp';
@@ -489,6 +490,7 @@ export default function App() {
 
   return (
     <div className={`min-h-screen flex flex-col antialiased ${theme === 'dark' ? 'bg-slate-950 text-slate-100' : 'bg-slate-100 text-slate-900'}`}>
+      <Analytics />
       {/* Toast Alert */}
       {successToast && (
         <div className="fixed top-6 right-6 bg-slate-900 border-2 border-amber-500 rounded-2xl p-4 shadow-[0_20px_50px_rgba(0,0,0,0.8)] z-50 max-w-sm animate-bounce flex items-start space-x-3">
