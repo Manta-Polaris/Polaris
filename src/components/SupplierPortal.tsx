@@ -20,6 +20,7 @@ export const SupplierPortal: React.FC<SupplierPortalProps> = ({
   const [tradeSearch, setTradeSearch] = useState<string>('');
   const [tradeStatusFilter, setTradeStatusFilter] = useState<'ALL' | 'LOCKED' | 'RELEASED' | 'DISPUTED'>('ALL');
   const [disputeModal, setDisputeModal] = useState<Trade | null>(null);
+  const [disputeConfirmPending, setDisputeConfirmPending] = useState<boolean>(false);
   const [qrHighContrast, setQrHighContrast] = useState<boolean>(false);
   const [isLoadingTrades, setIsLoadingTrades] = useState<boolean>(true);
 
@@ -537,20 +538,49 @@ export const SupplierPortal: React.FC<SupplierPortalProps> = ({
               {/* Actions */}
               <div className="flex gap-2 pt-1">
                 <button
-                  onClick={() => setDisputeModal(null)}
+                  onClick={() => { setDisputeModal(null); setDisputeConfirmPending(false); }}
                   className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-2 rounded-xl text-[10px] uppercase tracking-wide transition-all"
                 >
                   Close
                 </button>
-                <button
-                  onClick={() => {
-                    setDisputeModal(null);
-                  }}
-                  className="flex-1 bg-red-950 hover:bg-red-900 text-red-400 border border-red-900 font-bold py-2 rounded-xl text-[10px] uppercase tracking-wide transition-all"
-                >
-                  Escalate to Arbitration
-                </button>
+                {disputeConfirmPending ? (
+                  <div className="flex-1 flex gap-1.5">
+                    <button
+                      onClick={() => setDisputeConfirmPending(false)}
+                      className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-2 rounded-xl text-[10px] uppercase transition-all"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={() => {
+                        onAddLedgerEvent(
+                          'CONTRACT_CALL',
+                          'TradeEscrow',
+                          'escalate_dispute',
+                          `Dispute escalated to on-chain arbitration for trade ${disputeModal.id.substring(0, 8)}. Funds frozen pending mediator ruling.`
+                        );
+                        setDisputeModal(null);
+                        setDisputeConfirmPending(false);
+                      }}
+                      className="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-2 rounded-xl text-[10px] uppercase tracking-wide transition-all"
+                    >
+                      Confirm
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setDisputeConfirmPending(true)}
+                    className="flex-1 bg-red-950 hover:bg-red-900 text-red-400 border border-red-900 font-bold py-2 rounded-xl text-[10px] uppercase tracking-wide transition-all"
+                  >
+                    Escalate to Arbitration
+                  </button>
+                )}
               </div>
+              {disputeConfirmPending && (
+                <p className="text-[9px] text-red-400 text-center font-bold animate-pulse">
+                  This will freeze funds and notify the on-chain mediator. Are you sure?
+                </p>
+              )}
             </div>
           </div>
         );
