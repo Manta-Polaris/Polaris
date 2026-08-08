@@ -21,6 +21,13 @@ export const SupplierPortal: React.FC<SupplierPortalProps> = ({
   const [tradeStatusFilter, setTradeStatusFilter] = useState<'ALL' | 'LOCKED' | 'RELEASED' | 'DISPUTED'>('ALL');
   const [disputeModal, setDisputeModal] = useState<Trade | null>(null);
   const [qrHighContrast, setQrHighContrast] = useState<boolean>(false);
+  const [isLoadingTrades, setIsLoadingTrades] = useState<boolean>(true);
+
+  // Simulate initial data fetch
+  React.useEffect(() => {
+    const t = setTimeout(() => setIsLoadingTrades(false), 1200);
+    return () => clearTimeout(t);
+  }, []);
 
   // Mock dispute details — keyed by trade id, fallback for any unknown trade
   const MOCK_DISPUTES: Record<string, { reason: string; raisedBy: string; timestamp: string }> = {
@@ -313,7 +320,40 @@ export const SupplierPortal: React.FC<SupplierPortalProps> = ({
             </div>
           </div>
 
-          {supplierTrades.length === 0 ? (
+          {isLoadingTrades ? (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="text-slate-400 border-b border-slate-800">
+                    <th className="pb-3 font-semibold">Trader</th>
+                    <th className="pb-3 font-semibold">Amount locked</th>
+                    <th className="pb-3 font-semibold">Local Conversion</th>
+                    <th className="pb-3 font-semibold">Status</th>
+                    <th className="pb-3 font-semibold">Fulfillment / Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800/60">
+                  {[1, 2, 3].map((i) => (
+                    <tr key={i} className="animate-pulse">
+                      <td className="py-4">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-6 h-6 rounded-full bg-slate-800" />
+                          <div className="space-y-1.5">
+                            <div className="h-2.5 w-28 bg-slate-800 rounded" />
+                            <div className="h-2 w-20 bg-slate-800/60 rounded" />
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-4"><div className="h-2.5 w-16 bg-slate-800 rounded" /></td>
+                      <td className="py-4"><div className="h-2.5 w-20 bg-slate-800 rounded" /></td>
+                      <td className="py-4"><div className="h-4 w-14 bg-slate-800 rounded" /></td>
+                      <td className="py-4"><div className="h-6 w-28 bg-slate-800 rounded-lg" /></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : supplierTrades.length === 0 ? (
             <div className="text-center py-10 text-slate-500 flex flex-col items-center space-y-2">
               <Store size={28} className="text-slate-800" />
               <div className="font-semibold text-slate-400">No active incoming escrows</div>
